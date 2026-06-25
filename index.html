@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WolfSync</title>
+    <style>
+        * {
+            padding: 0;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        input {
+            width: 90%;
+            height: 35px;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            outline: none;
+            transition: .3s;
+            color: #0057f1;
+            font-size: 18px;
+            padding: 5px;
+        }
+        input:focus {
+            outline: #0057f1 3px solid;
+        }
+        .add {
+            width: 7%;
+            height: 35px;
+            border: 1px solid #0057f1;
+            background: transparent;
+            color: #0057f1;
+            border-radius: 10px;
+            transition: .3s;
+            cursor: pointer;
+        }
+        .add:hover {
+            background: #0057f1;
+            color: #fff;
+            outline: hsl(218, 100%, 58%) 3px solid;
+        }
+        .task-container {
+            margin: 0 auto;
+            margin-top: 10px;
+            width: 95%;
+            height: 300px;
+            border: 1px solid #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 25px;
+            color: #13899e;
+            border-radius: 15px;
+            list-style: none;
+            padding: 10px;
+            padding-top: 400px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            flex-wrap: wrap;
+            position: absolute;
+        }
+        .emojis {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            position: fixed;
+            bottom: 15px;
+            right: 10%;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 0 5px #48374e;
+            width: 90px;
+            height: 35px;
+            background: hsl(0, 0%, 16%);
+            gap: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .3s;
+        }
+        .emojis p:hover {
+            cursor: pointer;
+            transform: scale(1.8);
+        }
+        .fun,
+        .heart,
+        .sad,
+        .wow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            position: absolute;
+            bottom: 15px;
+            right: 50px;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 0 5px #4e4e4e;
+            width: 30px;
+            height: 35px;
+            background: hsl(0, 0%, 92%);
+            gap: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .3s;
+        }
+    </style>
+</head>
+<body>
+    <input placeholder="write ..." autocomplete="off">
+    <button class="add">add</button>
+    <div class="task-container">
+        <p class="task-p"></p>
+    </div>
+    <div class='emojis'>
+        <p class="emoji f" style="transition: .3s;">😂</p>
+        <p class="emoji h" style="transition: .3s;">❤️</p>
+        <p class="emoji s" style="transition: .3s;">😢</p>
+        <p class="emoji w" style="transition: .3s;">🤯</p>
+    </div>
+    <div class="fun">😂</div>
+    <div class="heart">❤️</div>
+    <div class="sad">😢</div>
+    <div class="wow">🤯</div>
+    <script>
+        let inp = document.querySelector('input')
+        let button = document.querySelector('.add')
+        let p = document.querySelector('.task-p')
+        let time = new Date()
+        let currentTimeHour = time.getHours()
+        let minits = time.getMinutes()
+        let sec = time.getSeconds()
+        let realTime = `${currentTimeHour}:${minits}:${sec}`
+        let timeText= `<h6 style='color: grey;font-size: 14px;position: relative;bottom: 5px;right: -350px;'>${realTime}</h6>`
+        button.onclick = (event) => {
+            event.preventDefault()
+            window.val = inp.value
+            console.log(realTime)
+            if(val) {
+                fetch('http://localhost:8000',{
+                    headers: { 'Content-Type':'application/json' },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        task_text: window.val
+                    })
+                })
+                .then(res => res.json())
+                .then(data => console.log(data))
+                .catch(err => console.error(err))
+                inp.value = ''
+            }
+        }
+        fetch('http://localhost:8000/tasks')
+        .then(res => res.json())
+        .then(data => data.tasks.forEach(task => { p.innerHTML+= `<li>${task.task_text + timeText}</li> <hr/>` }))
+        document.querySelector('.task-p').onclick = () => {
+            if( document.querySelector('.emojis').style.opacity === '0') {
+                document.querySelector('.emojis').style.opacity ='1'
+                document.querySelector('.emojis').style.pointerEvents ='auto'
+                let emoji =  document.querySelectorAll('.emoji')
+                emoji.onclick = () => {
+                    if(emoji.className === 'f') {
+                        document.querySelector('.emojis').style.opacity ='0'
+                        document.querySelector('.emojis').style.pointerEvents ='none'
+                        document.querySelector('.fun').style.opacity ='1'
+                    }
+                    else if(emoji.className === 'h') {
+                        document.querySelector('.emojis').style.opacity ='0'
+                        document.querySelector('.emojis').style.pointerEvents ='none'
+                        document.querySelector('.heart').style.opacity ='1'
+                    }
+                    else if(emoji.className === 'h') {
+                        document.querySelector('.emojis').style.opacity ='0'
+                        document.querySelector('.emojis').style.pointerEvents ='none'
+                        document.querySelector('.sad').style.opacity ='1'
+                    }
+                    else if(emoji.className === 'w') {
+                        document.querySelector('.emojis').style.opacity ='0'
+                        document.querySelector('.emojis').style.pointerEvents ='none'
+                        document.querySelector('.wow').style.opacity ='1'
+                    }
+                }
+            }
+            else {
+                document.querySelector('.emojis').style.opacity ='0'
+                document.querySelector('.emojis').style.pointerEvents ='none'   
+            }
+        }
+   </script>
+</body>
+</html>
